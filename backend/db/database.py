@@ -5,7 +5,7 @@ Provides a shared asynchronous Motor client and database connection.
 
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo import MongoClient
-from backend.config import settings
+from backend.core.config import settings
 
 # Async client for FastAPI routes and Motor operations
 async_client: AsyncIOMotorClient = AsyncIOMotorClient(settings.MONGODB_URI)

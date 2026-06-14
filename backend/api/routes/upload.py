@@ -5,7 +5,7 @@ import uuid
 
 from backend.auth.dependencies import get_current_user
 from backend.auth.models import UserResponse
-from backend.config import settings
+from backend.core.config import settings
 from backend.parsers.resume_parser import extract_text_from_file
 from backend.tools.vector_search import embed_and_store_resume
 from backend.db.collections import resumes_collection

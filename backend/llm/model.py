@@ -39,7 +39,7 @@ from langchain_core.language_models import BaseChatModel
 from langchain_openrouter import ChatOpenRouter
 from pydantic import BaseModel
 
-from backend.config import settings
+from backend.core.config import settings
 
 logger = logging.getLogger(__name__)
 

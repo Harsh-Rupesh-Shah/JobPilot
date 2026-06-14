@@ -6,7 +6,7 @@ Helper functions to create and decode JSON Web Tokens.
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
 from jose import jwt, JWTError
-from backend.config import settings
+from backend.core.config import settings
 
 def create_access_token(subject: str, expires_delta: Optional[timedelta] = None) -> str:
     """Creates a short-lived access token with the user_id as the subject."""

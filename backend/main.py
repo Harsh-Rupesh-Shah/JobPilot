@@ -6,11 +6,11 @@ FastAPI entry point. Configures CORS, includes routers, and handles lifespan eve
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.config import settings
+from backend.core.config import settings
 
 from backend.api.routes import auth, upload, run, stream, applications
 from backend.db.collections import setup_indexes
-from backend.logging_config import setup_logging
+from backend.core.logging_config import setup_logging
 
 # Initialize logging before creating the app
 setup_logging()

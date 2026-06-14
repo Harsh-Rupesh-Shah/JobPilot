@@ -7,7 +7,7 @@ from backend.auth.dependencies import get_current_user
 from backend.auth.models import UserResponse
 from backend.auth.jwt import decode_token
 from backend.db.collections import applications_collection
-from backend.config import settings
+from backend.core.config import settings
 
 router = APIRouter()
 

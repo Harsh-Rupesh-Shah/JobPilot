@@ -19,7 +19,7 @@ import os
 from langchain_core.tools import tool
 from langchain_tavily import TavilySearch
 
-from backend.config import settings
+from backend.core.config import settings
 
 logger = logging.getLogger(__name__)
 

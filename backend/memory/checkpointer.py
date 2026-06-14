@@ -6,7 +6,7 @@ Uses the synchronous PyMongo client as required by langgraph-checkpoint-mongodb.
 
 from langgraph.checkpoint.mongodb import MongoDBSaver
 from backend.db.database import sync_client
-from backend.config import settings
+from backend.core.config import settings
 
 def get_checkpointer():
     """

@@ -26,7 +26,7 @@ from backend.agents.graph import graph
 from backend.agents.state import ApplicationState
 from backend.auth.dependencies import get_current_user
 from backend.auth.models import UserResponse
-from backend.config import settings
+from backend.core.config import settings
 from backend.db.collections import applications_collection
 from backend.parsers.resume_parser import extract_text_from_file
 from backend.api.stream_manager import stream_manager

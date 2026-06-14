@@ -17,7 +17,7 @@ async def register(user_in: UserCreate, response: Response):
     token_obj, plain_refresh = await login_user(UserLogin(email=user_in.email, password=user_in.password))
     
     # 3. Set HttpOnly cookie for refresh token
-    from backend.config import settings
+    from backend.core.config import settings
     response.set_cookie(
         key=REFRESH_COOKIE_NAME,
         value=plain_refresh,
@@ -34,7 +34,7 @@ async def login(user_in: UserLogin, response: Response):
     """Login and return an access token (sets refresh cookie)."""
     token_obj, plain_refresh = await login_user(user_in)
     
-    from backend.config import settings
+    from backend.core.config import settings
     response.set_cookie(
         key=REFRESH_COOKIE_NAME,
         value=plain_refresh,

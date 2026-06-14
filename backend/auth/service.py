@@ -77,7 +77,7 @@ async def login_user(user_in: UserLogin) -> tuple[Token, str]:
     refresh_token = create_refresh_token(subject=user_id)
     
     # Save refresh token hash to DB
-    from backend.config import settings
+    from backend.core.config import settings
     from datetime import timedelta
     expire_date = datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
     
