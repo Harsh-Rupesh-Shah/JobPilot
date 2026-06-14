@@ -18,6 +18,7 @@ JWT access token is passed as a query parameter (?token=...) and validated here.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 from typing import AsyncGenerator
@@ -106,6 +107,7 @@ async def _event_generator(run_id: str) -> AsyncGenerator[str, None]:
 
             metadata: dict = event.get("metadata", {})
             agent_name: str = metadata.get("langgraph_node", "unknown")
+            event_source_name: str = event.get("name", "")
 
             # ── Token-by-token streaming ───────────────────────────────────────
             if event_name == "on_chat_model_stream":
@@ -116,7 +118,7 @@ async def _event_generator(run_id: str) -> AsyncGenerator[str, None]:
                     yield f"data: {payload}\n\n"
 
             # ── Graph run ended cleanly ────────────────────────────────────────
-            elif event_name == "on_chain_end" and agent_name == "LangGraph":
+            elif event_name == "on_chain_end" and event_source_name == "LangGraph":
                 # Read final state to get the research_brief
                 try:
                     snapshot = graph.get_state(config)
@@ -124,10 +126,19 @@ async def _event_generator(run_id: str) -> AsyncGenerator[str, None]:
                     if snapshot and snapshot.values:
                         research_brief = snapshot.values.get("research_brief", "")
 
-                    payload = json.dumps({
-                        "event": "complete",
-                        "research_brief": research_brief,
-                    })
+                    if snapshot and snapshot.next:
+                        # Paused at HITL
+                        interrupt_payload = snapshot.tasks[0].interrupts[0].value if snapshot.tasks and snapshot.tasks[0].interrupts else {}
+                        payload = json.dumps({
+                            "event": "interrupt",
+                            "message": "Awaiting your approval",
+                            "outputs": interrupt_payload.get("outputs", {})
+                        })
+                    else:
+                        payload = json.dumps({
+                            "event": "complete",
+                            "research_brief": research_brief,
+                        })
                     yield f"data: {payload}\n\n"
                 except Exception as state_exc:
                     logger.warning("Could not read final state: %s", state_exc)

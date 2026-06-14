@@ -20,6 +20,7 @@ import os
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from pydantic import BaseModel
+from langgraph.types import Command
 
 from backend.agents.graph import graph
 from backend.agents.state import ApplicationState
@@ -66,6 +67,7 @@ class ApproveRequest(BaseModel):
     tailored_resume: str
     cover_letter: str
     outreach_draft: str
+    interview_qa: str
 
 
 # ─── Background task: run the graph ───────────────────────────────────────────
@@ -87,10 +89,26 @@ async def _invoke_graph(run_id: str, initial_state: dict[str, Any]) -> None:
         # Send sentinel
         await stream_manager.broadcast(run_id, {"event": "GRAPH_END"})
 
-        logger.info("Graph invocation complete for run_id=%s", run_id)
+        logger.info("Graph invocation completed/paused for run_id=%s", run_id)
+        
+        # Check if the graph is paused or fully complete
+        snapshot = graph.get_state(config)
+        if snapshot.next:
+            status_val = "pending_approval"
+        else:
+            status_val = "complete"
+
+        update_dict = {
+            "status": status_val, 
+            "updated_at": datetime.now(timezone.utc)
+        }
+        if snapshot and snapshot.values:
+            update_dict["company"] = snapshot.values.get("company_name", "Unknown Company")
+            update_dict["role"] = snapshot.values.get("role_title", "Unknown Role")
+
         await applications_collection.update_one(
             {"_id": run_id},
-            {"$set": {"status": "complete", "updated_at": datetime.now(timezone.utc)}},
+            {"$set": update_dict},
         )
     except Exception as exc:
         logger.error("Graph invocation failed for run_id=%s: %s", run_id, exc)
@@ -106,6 +124,48 @@ async def _invoke_graph(run_id: str, initial_state: dict[str, Any]) -> None:
         )
         await stream_manager.broadcast(run_id, {"event": "error", "message": str(exc)})
         await stream_manager.broadcast(run_id, {"event": "GRAPH_END"})
+
+
+async def _resume_graph(run_id: str, user_edits: dict) -> None:
+    """
+    Resume the LangGraph graph asynchronously after HITL approval.
+    """
+    config = {"configurable": {"thread_id": run_id}}
+    try:
+        logger.info("Resuming graph for run_id=%s", run_id)
+        
+        # We invoke graph with Command(resume=user_edits)
+        async for _ in graph.astream_events(Command(resume=user_edits), config, version="v2"):
+            # Tracker node doesn't stream LLM tokens, so we can just wait for it to finish.
+            pass
+
+        # Graph is truly complete now
+        snapshot = graph.get_state(config)
+        update_dict = {"status": "complete", "updated_at": datetime.now(timezone.utc)}
+        if snapshot and snapshot.values:
+            update_dict["interview_qa"] = snapshot.values.get("interview_qa", "")
+            update_dict["hiring_manager"] = snapshot.values.get("hiring_manager", "")
+            update_dict["outreach_draft"] = snapshot.values.get("outreach_draft", "")
+            update_dict["company"] = snapshot.values.get("company_name", "Unknown Company")
+            update_dict["role"] = snapshot.values.get("role_title", "Unknown Role")
+
+        await applications_collection.update_one(
+            {"_id": run_id},
+            {"$set": update_dict},
+        )
+        logger.info("Graph resumed and completed for run_id=%s", run_id)
+    except Exception as exc:
+        logger.error("Graph resume failed for run_id=%s: %s", run_id, exc)
+        await applications_collection.update_one(
+            {"_id": run_id},
+            {
+                "$set": {
+                    "status": "failed",
+                    "error": str(exc),
+                    "updated_at": datetime.now(timezone.utc),
+                }
+            },
+        )
 
 
 # ─── Routes ───────────────────────────────────────────────────────────────────
@@ -242,11 +302,29 @@ async def get_run_status(
 async def approve_run(
     run_id: str,
     req: ApproveRequest,
+    background_tasks: BackgroundTasks,
     current_user: UserResponse = Depends(get_current_user),
 ) -> dict[str, str]:
     """
     Submit human-in-the-loop approval to resume the graph.
-    Will be fully implemented when hitl.py is added.
     """
-    # Stub — returns accepted; will wire Command(resume=...) when HITL node is built
-    return {"status": "accepted", "message": "HITL node not yet implemented."}
+    # Verify the run exists and belongs to this user
+    record = await applications_collection.find_one(
+        {"_id": run_id, "user_id": current_user.user_id}
+    )
+    if not record:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Run '{run_id}' not found.",
+        )
+
+    # Update status to running again, since it was interrupted
+    await applications_collection.update_one(
+        {"_id": run_id},
+        {"$set": {"status": "running", "updated_at": datetime.now(timezone.utc)}},
+    )
+
+    # Resume graph in background task
+    background_tasks.add_task(_resume_graph, run_id, req.model_dump())
+    
+    return {"status": "accepted", "message": "Run resumed."}

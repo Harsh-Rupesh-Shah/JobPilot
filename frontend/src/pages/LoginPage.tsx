@@ -39,7 +39,7 @@ export default function LoginPage() {
               <span className="material-symbols-outlined !text-[28px]">work</span>
             </div>
             <h1 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface font-bold">
-              AI Job Co-Pilot
+              JobCopilot
             </h1>
             <p className="font-interface-sm text-interface-sm text-on-surface-variant mt-2">
               Your AI-powered career partner
@@ -145,7 +145,7 @@ export default function LoginPage() {
         {/* Decorative Footer */}
         <div className="mt-8 text-center">
           <p className="font-label-caps text-label-caps text-outline uppercase tracking-widest">
-            JobPilot • Precise Career Intelligence
+            JobCopilot • Precise Career Intelligence
           </p>
         </div>
       </main>

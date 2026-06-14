@@ -113,7 +113,7 @@ export default function ResumeUpload({ onNext }: ResumeUploadProps) {
 
       {/* Right Column: Preview */}
       <div className="lg:col-span-5">
-        <div className="card overflow-hidden flex flex-col h-full min-h-[400px]">
+        <div className="card overflow-hidden flex flex-col h-[500px]">
           <div className="p-4 border-b border-outline-variant bg-surface-container-low flex items-center justify-between">
             <span className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">
               Parsed Resume Preview

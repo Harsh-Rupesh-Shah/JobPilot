@@ -10,6 +10,7 @@ import { openSSEStream } from '../api/client'
 // ── Types ─────────────────────────────────────────────────────────────────
 
 export interface AgentTokens {
+  supervisor: string
   research: string
   resume: string
   cover_letter: string
@@ -37,6 +38,7 @@ interface UseSSEReturn {
 }
 
 const INITIAL_TOKENS: AgentTokens = {
+  supervisor:    '',
   research:      '',
   resume:        '',
   cover_letter:  '',

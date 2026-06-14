@@ -48,6 +48,14 @@ export interface ApplicationRecord {
   updated_at: string
 }
 
+export interface VaultRecord {
+  _id: string
+  company: string
+  role: string
+  interview_qa: string
+  created_at: string
+}
+
 export interface ApplicationOutput {
   output_type: 'resume' | 'cover_letter' | 'research' | 'interview_qa' | 'outreach'
   content: string
@@ -125,7 +133,7 @@ export const authApi = {
 // ── Resume endpoints ──────────────────────────────────────────────────────
 
 export const resumeApi = {
-  upload: (file: File): Promise<ParsedResume> => {
+  upload: async (file: File): Promise<ParsedResume> => {
     const form = new FormData()
     form.append('file', file)
     return apiClient
@@ -134,6 +142,18 @@ export const resumeApi = {
       })
       .then((r) => r.data)
   },
+  getLatest: async (): Promise<ParsedResume | null> => {
+    try {
+      const response = await apiClient.get<ParsedResume>('/upload/resume')
+      return response.data
+    } catch (err: any) {
+      if (err.response?.status === 404) return null
+      throw err
+    }
+  },
+  update: async (text: string): Promise<ParsedResume> => {
+    return apiClient.put<ParsedResume>('/upload/resume', { text }).then(r => r.data)
+  }
 }
 
 // ── Run / Application endpoints ───────────────────────────────────────────
@@ -158,8 +178,14 @@ export const applicationsApi = {
       .get<{ application: ApplicationRecord; outputs: ApplicationOutput[] }>(`/applications/${id}`)
       .then((r) => r.data),
 
+  getVault: (): Promise<VaultRecord[]> =>
+    apiClient.get<VaultRecord[]>('/applications/vault').then((r) => r.data),
+
   exportUrl: (id: string, format: 'pdf' | 'docx'): string =>
-    `${BASE_URL}/export/${id}/${format}`,
+    `${BASE_URL}/applications/export/${id}/${format}${_accessToken ? `?token=${encodeURIComponent(_accessToken)}` : ''}`,
+    
+  delete: (id: string): Promise<void> =>
+    apiClient.delete(`/applications/${id}`).then((r) => r.data),
 }
 
 // ── SSE helper ────────────────────────────────────────────────────────────

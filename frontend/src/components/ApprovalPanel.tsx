@@ -5,16 +5,18 @@ interface ApprovalPanelProps {
     tailored_resume: string
     cover_letter: string
     outreach_draft: string
+    interview_qa: string
   }
-  onApprove: (edited: { tailored_resume: string; cover_letter: string; outreach_draft: string }) => Promise<void>
+  onApprove: (edited: { tailored_resume: string; cover_letter: string; outreach_draft: string; interview_qa: string }) => Promise<void>
 }
 
 export default function ApprovalPanel({ outputs, onApprove }: ApprovalPanelProps) {
   const [editedResume, setEditedResume] = useState(outputs.tailored_resume)
   const [editedLetter, setEditedLetter] = useState(outputs.cover_letter)
   const [editedOutreach, setEditedOutreach] = useState(outputs.outreach_draft)
+  const [editedQa, setEditedQa] = useState(outputs.interview_qa)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [activeTab, setActiveTab] = useState<'resume' | 'cover_letter' | 'outreach'>('resume')
+  const [activeTab, setActiveTab] = useState<'resume' | 'cover_letter' | 'outreach' | 'qa'>('resume')
 
   const handleApprove = async () => {
     setIsSubmitting(true)
@@ -23,6 +25,7 @@ export default function ApprovalPanel({ outputs, onApprove }: ApprovalPanelProps
         tailored_resume: editedResume,
         cover_letter: editedLetter,
         outreach_draft: editedOutreach,
+        interview_qa: editedQa,
       })
     } finally {
       setIsSubmitting(false)
@@ -64,6 +67,7 @@ export default function ApprovalPanel({ outputs, onApprove }: ApprovalPanelProps
           { id: 'resume', label: 'Tailored Resume' },
           { id: 'cover_letter', label: 'Cover Letter' },
           { id: 'outreach', label: 'Outreach Email' },
+          { id: 'qa', label: 'Interview Q&A' },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -88,12 +92,15 @@ export default function ApprovalPanel({ outputs, onApprove }: ApprovalPanelProps
               ? editedResume
               : activeTab === 'cover_letter'
               ? editedLetter
-              : editedOutreach
+              : activeTab === 'outreach'
+              ? editedOutreach
+              : editedQa
           }
           onChange={(e) => {
             if (activeTab === 'resume') setEditedResume(e.target.value)
             if (activeTab === 'cover_letter') setEditedLetter(e.target.value)
             if (activeTab === 'outreach') setEditedOutreach(e.target.value)
+            if (activeTab === 'qa') setEditedQa(e.target.value)
           }}
         />
       </div>

@@ -48,7 +48,7 @@ export default function RegisterPage() {
       {/* Top Branding */}
       <header className="w-full max-w-container px-margin-mobile md:px-margin-desktop py-8 flex justify-start">
         <div className="flex items-center gap-2">
-          <span className="font-headline-lg text-headline-lg font-bold text-primary">JobPilot</span>
+          <span className="font-headline-lg text-headline-lg font-bold text-primary">JobCopilot</span>
         </div>
       </header>
 
@@ -163,7 +163,7 @@ export default function RegisterPage() {
 
       {/* Simple Footer */}
       <footer className="w-full py-8 text-center">
-        <p className="font-label-caps text-label-caps text-outline">© 2024 JobPilot Intelligence Systems</p>
+        <p className="font-label-caps text-label-caps text-outline">© 2024 JobCopilot Intelligence Systems</p>
       </footer>
     </div>
   )

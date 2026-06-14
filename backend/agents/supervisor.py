@@ -21,9 +21,11 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 from langchain_core.runnables import RunnableConfig
+from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.messages import SystemMessage
 
 from backend.agents.state import ApplicationState
-from backend.llm.model import get_structured_llm
+from backend.llm.model import llm_writer
 from backend.prompts.supervisor import SUPERVISOR_SYSTEM_PROMPT
 
 logger = logging.getLogger(__name__)
@@ -51,7 +53,7 @@ class SupervisorOutput(BaseModel):
 
 # ─── Agent node ───────────────────────────────────────────────────────────────
 
-def supervisor_agent(state: ApplicationState, config: RunnableConfig) -> dict[str, Any]:
+async def supervisor_agent(state: ApplicationState, config: RunnableConfig) -> dict[str, Any]:
     """
     LangGraph node: parse the JD and extract structured metadata.
 
@@ -74,27 +76,32 @@ def supervisor_agent(state: ApplicationState, config: RunnableConfig) -> dict[st
         logger.error("Supervisor received empty job_description.")
         raise ValueError("job_description is required but was empty.")
 
-    prompt = SUPERVISOR_SYSTEM_PROMPT.format(
+    parser = JsonOutputParser(pydantic_object=SupervisorOutput)
+    
+    prompt_text = SUPERVISOR_SYSTEM_PROMPT.format(
         jd=job_description,
         resume=resume_text,
     )
+    prompt_text += f"\n\n<format_instructions>\n{parser.get_format_instructions()}\n</format_instructions>"
 
     try:
-        structured_llm = get_structured_llm(SupervisorOutput)
-        result: SupervisorOutput = structured_llm.invoke(prompt, config)
+        messages = [SystemMessage(content=prompt_text)]
+        chain = llm_writer | parser
+        result = await chain.ainvoke(messages, config)
+        
         logger.info(
             "Supervisor extracted: company=%s, role=%s, skills=%d",
-            result.company_name,
-            result.role_title,
-            len(result.required_skills),
+            result.get("company_name", ""),
+            result.get("role_title", ""),
+            len(result.get("required_skills", [])),
         )
     except Exception as exc:
         logger.error("Supervisor agent failed: %s", exc)
         raise
 
     return {
-        "company_name": result.company_name,
-        "role_title": result.role_title,
-        "hiring_manager": result.hiring_manager,
-        "required_skills": result.required_skills,
+        "company_name": result.get("company_name", ""),
+        "role_title": result.get("role_title", ""),
+        "hiring_manager": result.get("hiring_manager", ""),
+        "required_skills": result.get("required_skills", []),
     }
