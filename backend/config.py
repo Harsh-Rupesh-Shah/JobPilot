@@ -28,8 +28,14 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
 
     # Third Party APIs
-    OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "")
-    TAVILY_API_KEY: str = os.getenv("TAVILY_API_KEY", "")
+    OPENROUTER_API_KEY: str = ""
+    TAVILY_API_KEY: str = ""
+
+    # LLM model names (via OpenRouter)
+    # Writer: reasoning + writing tasks (research, cover letter, interview prep, outreach, supervisor)
+    LLM_WRITER_MODEL: str = "openrouter/auto"
+    # Coder: structured transformation tasks (resume rewriting)
+    LLM_CODER_MODEL: str = "openrouter/auto"
 
     # Uploads
     UPLOAD_DIR: str = "uploads"

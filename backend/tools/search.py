@@ -44,8 +44,10 @@ _tavily_client = TavilySearch(
 # llm.bind_tools([web_search_tool]). LangChain uses the docstring as the
 # tool description sent to the LLM so it knows when and how to call it.
 
+import asyncio
+
 @tool
-def web_search_tool(query: str) -> list[dict[str, Any]]:
+async def web_search_tool(query: str) -> list[dict[str, Any]]:
     """
     Search the web for up-to-date information about a company, role, or person.
 
@@ -70,13 +72,20 @@ def web_search_tool(query: str) -> list[dict[str, Any]]:
         - 'score': Tavily relevance score (higher is more relevant)
     """
     logger.info("Web search query: %s", query)
-    try:
-        results: list[dict[str, Any]] = _tavily_client.invoke(query)
-        logger.info("Web search returned %d results for query: %s", len(results), query)
-        return results
-    except Exception as exc:
-        logger.error("Web search failed for query '%s': %s", query, exc)
-        raise
+    
+    # Simple retry logic for intermittent API failures
+    for attempt in range(3):
+        try:
+            results: list[dict[str, Any]] = await _tavily_client.ainvoke(query)
+            logger.info("Web search returned %d results for query: %s", len(results), query)
+            return results
+        except Exception as exc:
+            if attempt < 2:
+                logger.warning("Web search failed for query '%s' (attempt %d). Retrying... Error: %s", query, attempt + 1, exc)
+                await asyncio.sleep(1)
+            else:
+                logger.error("Web search failed for query '%s' after 3 attempts: %s", query, exc)
+                raise
 
 
 # ─── Plain async helper (for direct agent node use) ────────────────────────────

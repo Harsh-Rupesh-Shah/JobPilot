@@ -7,6 +7,7 @@ from backend.auth.dependencies import get_current_user
 from backend.auth.models import UserResponse
 from backend.config import settings
 from backend.parsers.resume_parser import extract_text_from_file
+from backend.tools.vector_search import embed_and_store_resume
 
 router = APIRouter()
 
@@ -53,7 +54,22 @@ async def upload_resume(
         extracted_text = await extract_text_from_file(file_path, ext)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to parse file: {e}")
-        
+
+    # Build FAISS vector index for the resume (used later by the Resume Agent)
+    # Uses file_id as the resume_id so it can be retrieved during graph execution.
+    try:
+        embed_and_store_resume(
+            resume_text=extracted_text,
+            run_id=file_id,
+            user_id=current_user.user_id,
+        )
+    except Exception as embed_exc:
+        # Non-fatal: log but don't block the upload response
+        import logging
+        logging.getLogger(__name__).warning(
+            "FAISS index build failed for file_id=%s: %s", file_id, embed_exc
+        )
+
     return ParsedResume(
         resume_id=file_id,
         text=extracted_text,

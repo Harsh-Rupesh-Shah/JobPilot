@@ -1,67 +1,252 @@
-from typing import Optional
-from fastapi import APIRouter, Depends
+"""
+backend/api/routes/run.py
+
+Handles starting a new co-pilot run, polling its status, and submitting
+human-in-the-loop approval.
+
+POST /run         — Invokes the LangGraph graph in a background thread
+GET  /status/{id} — Reads graph state from the MongoDB checkpointer
+POST /approve/{id}— (stub — will be activated when hitl.py is added)
+"""
+
+from __future__ import annotations
+
+import asyncio
+import logging
+import uuid
+from datetime import datetime, timezone
+from typing import Any, Optional
+import os
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from pydantic import BaseModel
 
+from backend.agents.graph import graph
+from backend.agents.state import ApplicationState
 from backend.auth.dependencies import get_current_user
 from backend.auth.models import UserResponse
+from backend.config import settings
+from backend.db.collections import applications_collection
+from backend.parsers.resume_parser import extract_text_from_file
+from backend.api.stream_manager import stream_manager
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
+
+# ─── Request / response models ────────────────────────────────────────────────
+
 class RunRequest(BaseModel):
+    """Body for POST /run."""
+
     job_url: Optional[str] = None
     job_description: Optional[str] = None
-    resume_id: str
+    resume_id: str             # ID of the previously uploaded resume
+
 
 class RunResponse(BaseModel):
+    """Response from POST /run."""
+
     run_id: str
+
 
 class RunStatusResponse(BaseModel):
+    """Response from GET /status/{run_id}."""
+
     run_id: str
-    status: str # 'running', 'pending_approval', 'complete', 'failed'
+    status: str                     # running | complete | failed
     current_agent: Optional[str] = None
+    research_brief: Optional[str] = None
     interrupt_payload: Optional[dict] = None
 
+
 class ApproveRequest(BaseModel):
+    """Body for POST /approve/{run_id} — will be used when HITL node is added."""
+
     tailored_resume: str
     cover_letter: str
     outreach_draft: str
 
+
+# ─── Background task: run the graph ───────────────────────────────────────────
+
+async def _invoke_graph(run_id: str, initial_state: dict[str, Any]) -> None:
+    """
+    Run the LangGraph graph asynchronously in a background task.
+
+    Updates the application record in MongoDB on completion or failure.
+    """
+    config = {"configurable": {"thread_id": run_id}}
+    try:
+        logger.info("Graph invocation starting for run_id=%s", run_id)
+        
+        # Use astream_events to broadcast events while the graph runs
+        async for event in graph.astream_events(initial_state, config, version="v2"):
+            await stream_manager.broadcast(run_id, event)
+            
+        # Send sentinel
+        await stream_manager.broadcast(run_id, {"event": "GRAPH_END"})
+
+        logger.info("Graph invocation complete for run_id=%s", run_id)
+        await applications_collection.update_one(
+            {"_id": run_id},
+            {"$set": {"status": "complete", "updated_at": datetime.now(timezone.utc)}},
+        )
+    except Exception as exc:
+        logger.error("Graph invocation failed for run_id=%s: %s", run_id, exc)
+        await applications_collection.update_one(
+            {"_id": run_id},
+            {
+                "$set": {
+                    "status": "failed",
+                    "error": str(exc),
+                    "updated_at": datetime.now(timezone.utc),
+                }
+            },
+        )
+        await stream_manager.broadcast(run_id, {"event": "error", "message": str(exc)})
+        await stream_manager.broadcast(run_id, {"event": "GRAPH_END"})
+
+
+# ─── Routes ───────────────────────────────────────────────────────────────────
+
 @router.post("/run", response_model=RunResponse)
 async def start_run(
     req: RunRequest,
-    current_user: UserResponse = Depends(get_current_user)
-):
+    background_tasks: BackgroundTasks,
+    current_user: UserResponse = Depends(get_current_user),
+) -> RunResponse:
     """
-    Initializes a new LangGraph application run thread.
-    Returns the thread ID (run_id).
+    Start a new co-pilot run.
+
+    Validates inputs, creates a run record in MongoDB, and launches the
+    LangGraph graph in a background task so the response is returned immediately.
     """
-    # Stub implementation. Will wire to graph.py later.
-    import uuid
-    return RunResponse(run_id=f"run_{uuid.uuid4().hex[:8]}")
+    if not req.job_description and not req.job_url:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Either job_description or job_url must be provided.",
+        )
+
+    if not req.resume_id.strip():
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="resume_id is required.",
+        )
+
+    # Locate and read the uploaded resume file
+    resume_text = ""
+    for ext in ["pdf", "docx"]:
+        file_path = os.path.join(settings.UPLOAD_DIR, f"{req.resume_id}.{ext}")
+        if os.path.exists(file_path):
+            try:
+                resume_text = await extract_text_from_file(file_path, ext)
+                break
+            except Exception as e:
+                logger.warning("Failed to extract text from %s: %s", file_path, e)
+    
+    if not resume_text:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Resume file not found or could not be parsed.",
+        )
+
+    run_id = f"run_{uuid.uuid4().hex}"
+    user_id: str = current_user.user_id
+    now = datetime.now(timezone.utc)
+
+    # Build initial graph state
+    initial_state: dict[str, Any] = {
+        "resume_text": resume_text,
+        "job_description": req.job_description or "",
+        "job_url": req.job_url or "",
+        "company_name": "",
+        "role_title": "",
+        "hiring_manager": "",
+        "required_skills": [],
+        "research_brief": "",
+        "tailored_resume": "",
+        "cover_letter": "",
+        "interview_qa": "",
+        "outreach_draft": "",
+        "messages": [],
+        "run_id": run_id,
+        "user_id": user_id,
+        "timestamp": now.isoformat(),
+    }
+
+    # Persist the run record before launching so status polling works immediately
+    await applications_collection.insert_one(
+        {
+            "_id": run_id,
+            "run_id": run_id,
+            "user_id": user_id,
+            "job_url": req.job_url or "",
+            "job_description": req.job_description or "",
+            "status": "running",
+            "created_at": now,
+            "updated_at": now,
+        }
+    )
+
+    # Launch graph in background (non-blocking)
+    background_tasks.add_task(_invoke_graph, run_id, initial_state)
+    logger.info("Run %s created for user %s", run_id, user_id)
+
+    return RunResponse(run_id=run_id)
+
 
 @router.get("/status/{run_id}", response_model=RunStatusResponse)
 async def get_run_status(
     run_id: str,
-    current_user: UserResponse = Depends(get_current_user)
-):
+    current_user: UserResponse = Depends(get_current_user),
+) -> RunStatusResponse:
     """
-    Polls the current state of the LangGraph execution.
+    Poll the current status of a co-pilot run.
+
+    Reads the persisted application record from MongoDB and, if the run is
+    complete, also reads the final graph state from the LangGraph checkpointer
+    to return the research_brief.
     """
-    # Stub implementation.
+    # Verify the run exists and belongs to this user
+    record = await applications_collection.find_one(
+        {"_id": run_id, "user_id": current_user.user_id}
+    )
+    if not record:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Run '{run_id}' not found.",
+        )
+
+    run_status: str = record.get("status", "running")
+    research_brief: Optional[str] = None
+
+    # If complete, read the final graph state from the checkpointer
+    if run_status == "complete":
+        try:
+            config = {"configurable": {"thread_id": run_id}}
+            state_snapshot = graph.get_state(config)
+            if state_snapshot and state_snapshot.values:
+                research_brief = state_snapshot.values.get("research_brief")
+        except Exception as exc:
+            logger.warning("Could not read graph state for run_id=%s: %s", run_id, exc)
+
     return RunStatusResponse(
         run_id=run_id,
-        status="running",
-        current_agent="research"
+        status=run_status,
+        research_brief=research_brief,
     )
+
 
 @router.post("/approve/{run_id}")
 async def approve_run(
     run_id: str,
     req: ApproveRequest,
-    current_user: UserResponse = Depends(get_current_user)
-):
+    current_user: UserResponse = Depends(get_current_user),
+) -> dict[str, str]:
     """
-    Submits human-in-the-loop edits to resume the graph.
+    Submit human-in-the-loop approval to resume the graph.
+    Will be fully implemented when hitl.py is added.
     """
-    # Stub implementation
-    return {"status": "resumed"}
+    # Stub — returns accepted; will wire Command(resume=...) when HITL node is built
+    return {"status": "accepted", "message": "HITL node not yet implemented."}

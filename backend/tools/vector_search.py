@@ -30,8 +30,8 @@ import os
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.documents import Document
 
 if TYPE_CHECKING:

@@ -10,6 +10,10 @@ from backend.config import settings
 
 from backend.api.routes import auth, upload, run, stream, applications
 from backend.db.collections import setup_indexes
+from backend.logging_config import setup_logging
+
+# Initialize logging before creating the app
+setup_logging()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
