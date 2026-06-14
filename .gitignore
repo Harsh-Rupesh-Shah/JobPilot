@@ -1,0 +1,33 @@
+frontend/.env
+myenv/
+backend/.env
+
+
+# Environment variables
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment (optional, but good to exclude if you have one)
+venv/
+env/
+
+# Frontend dependencies (optional, since you're using npm)
+node_modules/
+
+# Testing
+.pytest_cache/
+
+# Editor settings (optional)
+.vscode/
+.idea/
+
+# Logs (optional)
+*.log
+
+ai_job_copilot_architecture.md
+skills.md

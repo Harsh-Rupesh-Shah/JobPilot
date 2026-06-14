@@ -1,0 +1,289 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>JobPilot - New Application</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-error-container": "#93000a",
+                      "on-secondary-fixed": "#07006c",
+                      "surface-dim": "#d8dadc",
+                      "tertiary-fixed": "#6ffbbe",
+                      "on-background": "#191c1e",
+                      "on-tertiary-fixed": "#002113",
+                      "primary": "#000000",
+                      "on-surface": "#191c1e",
+                      "on-surface-variant": "#45464d",
+                      "on-secondary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "error-container": "#ffdad6",
+                      "secondary-fixed-dim": "#c0c1ff",
+                      "primary-container": "#131b2e",
+                      "surface-container-lowest": "#ffffff",
+                      "inverse-on-surface": "#eff1f3",
+                      "secondary-container": "#6063ee",
+                      "primary-fixed-dim": "#bec6e0",
+                      "secondary-fixed": "#e1e0ff",
+                      "background": "#f7f9fb",
+                      "on-secondary-fixed-variant": "#2f2ebe",
+                      "on-primary-fixed": "#131b2e",
+                      "surface-container-high": "#e6e8ea",
+                      "outline-variant": "#c6c6cd",
+                      "on-error": "#ffffff",
+                      "surface-variant": "#e0e3e5",
+                      "tertiary-container": "#002113",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "inverse-surface": "#2d3133",
+                      "tertiary": "#000000",
+                      "secondary": "#4648d4",
+                      "on-primary-container": "#7c839b",
+                      "on-primary": "#ffffff",
+                      "outline": "#76777d",
+                      "on-secondary-container": "#fffbff",
+                      "primary-fixed": "#dae2fd",
+                      "surface-bright": "#f7f9fb",
+                      "inverse-primary": "#bec6e0",
+                      "on-tertiary-container": "#009668",
+                      "surface-tint": "#565e74",
+                      "surface": "#f7f9fb",
+                      "surface-container-low": "#f2f4f6",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "surface-container-highest": "#e0e3e5",
+                      "surface-container": "#eceef0",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-fixed-variant": "#3f465c"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "24px",
+                      "margin-desktop": "48px",
+                      "unit": "4px",
+                      "container-max": "1280px",
+                      "margin-mobile": "16px"
+              },
+              "fontFamily": {
+                      "headline-lg": ["Newsreader"],
+                      "interface-sm": ["Geist"],
+                      "label-caps": ["Geist"],
+                      "display-lg": ["Newsreader"],
+                      "headline-lg-mobile": ["Newsreader"],
+                      "editorial-body": ["Newsreader"],
+                      "interface-md": ["Geist"]
+              },
+              "fontSize": {
+                      "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "500"}],
+                      "interface-sm": ["14px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                      "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "1.2", "fontWeight": "500"}],
+                      "editorial-body": ["20px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "interface-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        body { background-color: #f7f9fb; } /* fallback for bg-surface */
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased min-h-screen">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full flex flex-col py-8 px-4 bg-surface h-screen w-64 border-r border-outline-variant z-50">
+<div class="mb-12 px-4">
+<h1 class="font-headline-lg text-headline-lg font-bold text-primary tracking-tight">JobPilot</h1>
+<p class="font-interface-sm text-interface-sm text-on-surface-variant mt-1">AI Career Advisor</p>
+</div>
+<button class="mb-8 mx-4 bg-primary text-on-primary py-3 px-4 rounded-lg font-interface-md text-interface-md flex items-center justify-center gap-2 hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add</span>
+            New Application
+        </button>
+<ul class="flex flex-col gap-2 flex-grow">
+<!-- Active: Workspace -->
+<li class="">
+<a class="flex items-center gap-3 px-4 py-3 text-primary font-bold border-r-2 border-primary bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="clinical_notes">clinical_notes</span>
+<span class="font-interface-md text-interface-md">Workspace</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard_customize">dashboard_customize</span>
+<span class="font-interface-md text-interface-md">Applications</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="record_voice_over">record_voice_over</span>
+<span class="font-interface-md text-interface-md">Interview Prep</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-interface-md text-interface-md">Settings</span>
+</a>
+</li>
+</ul>
+<div class="mt-auto pt-4 border-t border-outline-variant">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-interface-md text-interface-md">Help Center</span>
+</a>
+</div>
+</nav>
+<!-- TopAppBar -->
+<header class="sticky top-0 z-40 w-full flex justify-between items-center px-gutter h-16 ml-64 max-w-[calc(100%-16rem)] bg-surface/80 backdrop-blur-md border-b border-outline-variant/30 shadow-sm">
+<div class="flex items-center gap-6">
+<nav class="hidden md:flex gap-6">
+<a class="font-interface-md text-interface-md text-on-surface-variant hover:text-primary transition-colors py-5" href="#">Drafts</a>
+<a class="font-interface-md text-interface-md text-on-surface-variant hover:text-primary transition-colors py-5" href="#">Completed</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="font-interface-md text-interface-md font-medium text-primary hover:bg-surface-container-low px-4 py-2 rounded-lg transition-colors">
+                Upgrade
+            </button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-container-high border border-outline-variant overflow-hidden">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="A professional headshot of a young man with short brown hair, wearing a dark blue crew neck shirt. He has a subtle smile and is positioned against a bright, airy outdoor background that is softly out of focus. The lighting is natural and flattering, creating a polished and approachable corporate look suitable for a high-end application profile avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNUzj8ELuVDLoJfPlv7Djlm9S6-FpTONwU2-8t9hPl3DOeY_6FxF-osOWP8uWnQRBNADiXqKPNra3z7zIS-LHrS0Sp7K-cZNIbRPmmLElX9GZvydSl5odsR4xyqOaVa4Zf-pEmOwHgR89pq2uTwsOgZNtcsq5gT5OoEUWeMIzCbpP_-ABdouN-rstK8qS1wSmqMpFsR_fcSJh80EaTOUGVhgBoaFu8wWrUpmXqN_YX-MspbWMpEGswbyldwcHgYWhhmpYgbDES_BTK">
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 p-margin-desktop max-w-container-max mx-auto">
+<div class="mb-12">
+<h2 class="font-display-lg text-display-lg text-primary mb-2">New Application</h2>
+<p class="font-editorial-body text-editorial-body text-on-surface-variant">Provide context for the AI agents to begin crafting your tailored materials.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Left Column: Inputs -->
+<div class="lg:col-span-7 flex flex-col gap-8">
+<!-- Resume Upload Card -->
+<section class="bg-surface-container-lowest rounded-xl border border-outline-variant p-8">
+<h3 class="font-interface-md text-interface-md font-bold text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant" style="font-size: 20px;">description</span>
+                        Source Material
+                    </h3>
+<div class="border-2 border-dashed border-outline-variant rounded-lg bg-surface flex flex-col items-center justify-center py-12 px-6 text-center hover:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary">upload_file</span>
+</div>
+<p class="font-interface-md text-interface-md text-primary font-medium mb-1">Drag &amp; drop your resume</p>
+<p class="font-interface-sm text-interface-sm text-on-surface-variant mb-4">PDF, DOCX, or TXT up to 5MB</p>
+<button class="font-label-caps text-label-caps border border-outline-variant px-4 py-2 rounded text-primary hover:bg-surface-container-highest transition-colors">
+                            Browse Files
+                        </button>
+</div>
+</section>
+<!-- Job Posting Input Card -->
+<section class="bg-surface-container-lowest rounded-xl border border-outline-variant p-8">
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-interface-md text-interface-md font-bold text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant" style="font-size: 20px;">work</span>
+                            Target Role
+                        </h3>
+<div class="flex gap-4">
+<button class="font-label-caps text-label-caps text-primary border-b-2 border-primary pb-1">Paste URL</button>
+<button class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors pb-1">Text Description</button>
+</div>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-0 top-1/2 -translate-y-1/2 text-on-surface-variant">link</span>
+<input class="w-full bg-transparent border-0 border-b border-outline-variant focus:border-primary focus:ring-0 pl-8 py-3 font-interface-md text-interface-md text-primary placeholder-outline-variant transition-colors" placeholder="https://company.com/careers/job-id" type="url">
+</div>
+</section>
+<!-- CTA Area -->
+<div class="flex justify-end pt-4">
+<button class="bg-primary text-on-primary font-interface-md text-interface-md px-8 py-3 rounded flex items-center gap-2 hover:opacity-90 transition-opacity shadow-sm">
+                        Start Analysis
+                        <span class="material-symbols-outlined" style="font-size: 18px;">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Right Column: Process Map visualizer -->
+<div class="lg:col-span-5">
+<section class="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 sticky top-24 shadow-[0_4px_20px_rgba(15,23,42,0.04)]">
+<h3 class="font-headline-lg text-headline-lg text-primary mb-6">Agent Network</h3>
+<p class="font-interface-sm text-interface-sm text-on-surface-variant mb-8">System is idle. Awaiting source material to commence semantic breakdown and drafting.</p>
+<div class="relative pl-6">
+<!-- Connecting Line -->
+<div class="absolute left-[27px] top-4 bottom-8 w-px bg-outline-variant/50"></div>
+<!-- Nodes -->
+<div class="flex flex-col gap-6">
+<!-- Supervisor Node -->
+<div class="relative flex items-center gap-4">
+<div class="w-2 h-2 rounded-full bg-outline-variant absolute -left-[23px] z-10 border-2 border-surface-container-lowest box-content"></div>
+<div class="flex-grow border border-outline-variant/50 rounded-lg p-3 flex items-center gap-3 bg-surface opacity-70">
+<div class="w-8 h-8 rounded bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant" style="font-size: 18px;">psychology</span>
+</div>
+<div>
+<p class="font-interface-sm text-interface-sm font-bold text-primary">Supervisor Agent</p>
+<p class="font-label-caps text-label-caps text-on-surface-variant mt-1">Idle</p>
+</div>
+</div>
+</div>
+<!-- Research Node -->
+<div class="relative flex items-center gap-4">
+<div class="w-2 h-2 rounded-full bg-outline-variant absolute -left-[23px] z-10 border-2 border-surface-container-lowest box-content"></div>
+<div class="flex-grow border border-outline-variant/50 rounded-lg p-3 flex items-center gap-3 bg-surface opacity-70">
+<div class="w-8 h-8 rounded bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant" style="font-size: 18px;">search</span>
+</div>
+<div>
+<p class="font-interface-sm text-interface-sm font-bold text-primary">Research Agent</p>
+<p class="font-label-caps text-label-caps text-on-surface-variant mt-1">Awaiting Trigger</p>
+</div>
+</div>
+</div>
+<!-- Resume Node -->
+<div class="relative flex items-center gap-4">
+<div class="w-2 h-2 rounded-full bg-outline-variant absolute -left-[23px] z-10 border-2 border-surface-container-lowest box-content"></div>
+<div class="flex-grow border border-outline-variant/50 rounded-lg p-3 flex items-center gap-3 bg-surface opacity-70">
+<div class="w-8 h-8 rounded bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant" style="font-size: 18px;">edit_document</span>
+</div>
+<div>
+<p class="font-interface-sm text-interface-sm font-bold text-primary">Resume Tailor</p>
+<p class="font-label-caps text-label-caps text-on-surface-variant mt-1">Awaiting Data</p>
+</div>
+</div>
+</div>
+<!-- Cover Letter Node -->
+<div class="relative flex items-center gap-4">
+<div class="w-2 h-2 rounded-full bg-outline-variant absolute -left-[23px] z-10 border-2 border-surface-container-lowest box-content"></div>
+<div class="flex-grow border border-outline-variant/50 rounded-lg p-3 flex items-center gap-3 bg-surface opacity-70">
+<div class="w-8 h-8 rounded bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant" style="font-size: 18px;">mail</span>
+</div>
+<div>
+<p class="font-interface-sm text-interface-sm font-bold text-primary">Cover Letter Drafter</p>
+<p class="font-label-caps text-label-caps text-on-surface-variant mt-1">Awaiting Data</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+
+
+
+</body></html>

@@ -1,0 +1,201 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Global Base ──────────────────────────────────────────────────────────── */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: #f7f9fb;
+    color: #191c1e;
+    font-family: "Geist", "Inter", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* Material Symbols */
+  .material-symbols-outlined {
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+    display: inline-block;
+    line-height: 1;
+    vertical-align: middle;
+    user-select: none;
+  }
+  .material-symbols-filled {
+    font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
+  }
+
+  /* Focus ring */
+  :focus-visible {
+    outline: 2px solid #4648d4;
+    outline-offset: 2px;
+  }
+}
+
+/* ── Design System Utilities ─────────────────────────────────────────────── */
+@layer components {
+  /* ── Buttons ── */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2
+           px-6 py-3 rounded-DEFAULT
+           bg-primary text-on-primary
+           font-interface-sm text-interface-sm font-semibold
+           transition-all duration-150
+           hover:opacity-90 active:scale-[0.98]
+           disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2
+           px-6 py-3 rounded-DEFAULT
+           border border-outline-variant bg-transparent text-on-surface
+           font-interface-sm text-interface-sm font-semibold
+           transition-all duration-150
+           hover:bg-surface-container active:scale-[0.98]
+           disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2
+           px-4 py-2 rounded-DEFAULT
+           text-on-surface-variant
+           font-interface-sm text-interface-sm
+           transition-colors duration-150
+           hover:bg-surface-container hover:text-on-surface;
+  }
+
+  /* ── Inputs ── */
+  .input-field {
+    @apply w-full px-4 py-3
+           bg-surface-container-lowest
+           border border-outline-variant rounded-DEFAULT
+           font-interface-md text-interface-md text-on-surface
+           placeholder:text-outline/60
+           transition-all duration-150
+           focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary;
+  }
+
+  .input-label {
+    @apply block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-2;
+  }
+
+  /* ── Cards ── */
+  .card {
+    @apply bg-surface-container-lowest border border-outline-variant rounded-lg
+           shadow-card;
+  }
+
+  .card-elevated {
+    @apply bg-surface-container-lowest border border-outline-variant rounded-lg
+           shadow-overlay;
+  }
+
+  /* ── Status Chips ── */
+  .chip {
+    @apply inline-flex items-center gap-1.5 px-3 py-1
+           rounded-full font-label-caps text-label-caps;
+  }
+
+  .chip-running {
+    @apply chip bg-secondary/10 text-secondary;
+  }
+
+  .chip-pending {
+    @apply chip bg-yellow-100 text-yellow-800;
+  }
+
+  .chip-complete {
+    @apply chip bg-tertiary-fixed/30 text-on-tertiary-container;
+  }
+
+  .chip-failed {
+    @apply chip bg-error-container text-on-error-container;
+  }
+
+  /* ── Navigation Bar ── */
+  .nav-bar {
+    @apply sticky top-0 z-40 w-full flex justify-between items-center
+           px-gutter h-16
+           bg-surface/80 backdrop-blur-md
+           border-b border-outline-variant/30
+           shadow-sm;
+  }
+
+  /* ── Page Layout ── */
+  .page-container {
+    @apply max-w-container mx-auto px-margin-desktop py-12;
+  }
+
+  /* ── Focus Drawer (glassmorphic AI panel) ── */
+  .focus-drawer {
+    @apply bg-surface-container-lowest/80 backdrop-blur-[12px]
+           border border-outline-variant rounded-lg shadow-overlay;
+  }
+
+  /* ── Glassmorphic decorative blobs ── */
+  .blob-indigo {
+    @apply fixed top-1/4 -right-24 w-96 h-96 -z-10
+           bg-secondary/5 blur-[120px] rounded-full pointer-events-none;
+  }
+
+  .blob-green {
+    @apply fixed bottom-0 -left-24 w-64 h-64 -z-10
+           bg-tertiary-fixed/10 blur-[100px] rounded-full pointer-events-none;
+  }
+}
+
+/* ── Upload zone dashed border (SVG trick to support dashed + rounded) ───── */
+.upload-dashed-border {
+  background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%234648d4' stroke-width='2' stroke-dasharray='12%2c 12' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+}
+
+/* ── Password strength bar ──────────────────────────────────────────────── */
+.strength-segment {
+  @apply h-1 flex-1 rounded-full bg-surface-container-highest transition-colors duration-300;
+}
+.strength-1 { background-color: #ba1a1a; }
+.strength-2 { background-color: #ffb400; }
+.strength-3 { background-color: #ffd900; }
+.strength-4 { background-color: #4648d4; }
+
+/* ── Scrollbar ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #c6c6cd;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #76777d;
+}
+
+/* ── Streaming cursor blink ─────────────────────────────────────────────── */
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+.streaming-cursor::after {
+  content: "▌";
+  animation: cursor-blink 0.8s step-end infinite;
+  color: #4648d4;
+  margin-left: 2px;
+}
